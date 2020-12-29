@@ -143,4 +143,20 @@ macro pairs_str(s)
 end
 
 
+"""
+    prefix_filter(prefix, Dict(pairs))
+    prefix_filter("A_", Dict(pairs":A_X => 1 :B_X => 2 :A_Y => 3"))
+        => Dict(:X => 1, Y => 3)
+
+Filter a Dict of pairs based on a prefix.
+Remove the prefix from the output keys.
+"""
+function prefix_filter(prefix, dict::Dict{K,V}) where {K, V}
+    prefix = string(prefix)
+    dict = filter(p->startswith(string(p[1]), prefix), dict)
+    Dict(K(string(k)[1+length(prefix):end]) => v for (k, v) in dict)
+end
+
+
+
 end # module PairStrings

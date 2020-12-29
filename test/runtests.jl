@@ -51,4 +51,5 @@ pins = pairs"""
 @test pairs""" "FOO" => (1, 2, 3)""" == ["FOO" => (1,2,3)]
 @test pairs""" "FOO" => "1, 2, 3" """ == ["FOO" => "1, 2, 3"]
 
-
+d = Dict(pairs":A_X => 1 :B_X => 2 :A_Y => 3")
+@test PairStrings.prefix_filter(:A_, d) == Dict(:X => 1, :Y => 3)
