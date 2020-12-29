@@ -3,11 +3,23 @@
 
 Embed `key => value` Pairs in a string.
 
+```
+julia> using PairStrings
+
+julia> pairs_str("Foo :FOO => 1 Bar :BAR => 2")
+2-element Array{Pair{Symbol,Int64},1}:
+ :FOO => 1
+ :BAR => 2
+
+julia> pairs"Foo :FOO => 1 Bar :BAR => 2"
+2-element Array{Pair{Symbol,Int64},1}:
+ :FOO => 1
+ :BAR => 2
+ ```
+
 e.g. Define a pin assignment map for a Raspberry Pi GPIO header.
 
 ```julia
-julia> using PairStrings
-
 julia> pins = pairs\"\"\"
                                R'Pi GPIO Pins
                               ┌──────────────┐
@@ -73,32 +85,51 @@ Match `key => value`,
       `key => [value]`
 """
 const pair_pattern = r"""
-    [^\s]+           # Pair key. Any non-whitespace characters.
-    \s*              # Optional whitespace.
-    =>               # Pair operator.
-    \s*              # Optional whitespace.
-    (  \[ [^\]]* \]  # Pair value. `[ ... ]`
-     | \(  [^)]* \)  #             `( ... )`
-     |  "  [^"]*  "  #             `" ... "`
-     |    [^\s]+     #             Any non-whitespace characters.
+    [^\s]+                  # Pair key. Any non-whitespace characters.
+
+    \s*                     # Optional whitespace.
+    =>                      # Pair operator.
+    \s*                     # Optional whitespace.
+
+    (                       # Pair value options: 
+         \[   [^\]]*   \]   #   `[ ... ]`
+     |   \(    [^)]*   \)   #   `( ... )`
+     |    "    [^"]*    "   #   `" ... "`
+     |        [^\s]+        #   Any non-whitespace characters.
     )
 """x
 
 
 """
-    match_pair(string, [i=1]) => Pair, next_i
+    match_pair(@__MODULE__, string, [i=1]) => Pair, next_i
 
 Search for `a => b` in `string` (starting at index `i`).
 """
-function match_pair(s, i=1)
+function match_pair(mod, s, i=1)
     m = match(pair_pattern, s, i)
     if m == nothing
         m, i
     else
-        pair = include_string(@__MODULE__,m.match)
+        pair = include_string(mod, m.match)
         i = m.offset + length(m.match)
         pair, i
     end
+end
+
+
+"""
+    pairs(@__MODULE__, string) => Vector{Pair}
+
+Extract `Vector{Pair}` from a string.
+"""
+function pairs(mod, s::AbstractString)
+    result = []
+    pair, i = match_pair(mod, s)
+    while pair != nothing
+        push!(result, pair)
+        pair, i = match_pair(mod, s, i)
+    end
+    [x for x in result]
 end
 
 
@@ -108,13 +139,7 @@ end
 Extract `Vector{Pair}` from a string.
 """
 macro pairs_str(s)
-    result = []
-    pair, i = match_pair(s)
-    while pair != nothing
-        push!(result, pair)
-        pair, i = match_pair(s, i)
-    end
-    [x for x in result]
+    :(pairs($(esc(:(@__MODULE__))), $(esc(s))))
 end
 
 
