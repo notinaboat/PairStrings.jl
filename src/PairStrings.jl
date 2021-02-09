@@ -75,7 +75,7 @@ julia> gpio[:LED_POWER][] = true
 """
 module PairStrings
 
-export @pairs_str
+export @pairs_str, @docpairs_str
 
 
 """
@@ -134,12 +134,23 @@ end
 
 
 """
-    pairs"Foo :a => 1 Bar :b => 2" => [:a => 1, :b => 2]"
+    pairs"Foo :a => 1 Bar :b => 2" => [:a => 1, :b => 2]
 
 Extract `Vector{Pair}` from a string.
 """
 macro pairs_str(s)
     :(pairs($(esc(:(@__MODULE__))), $(esc(s))))
+end
+
+"""
+    docpairs"Foo :a => 1 Bar :b => 2"
+        => ("Foo :a => 1 Bar :b => 2",
+            [:a => 1, :b => 2])
+
+Extract `Vector{Pair}` from a string (and also return the original string).
+"""
+macro docpairs_str(s)
+    :(($(esc(s)), pairs($(esc(:(@__MODULE__))), $(esc(s)))))
 end
 
 
