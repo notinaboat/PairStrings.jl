@@ -19,7 +19,7 @@ julia> pairs"Foo :FOO => 1 Bar :BAR => 2"
 e.g. Define a pin assignment map for a Raspberry Pi GPIO header.
 
 ```julia
-julia> pins = pairs\"\"\"
+julia> pins = pairs"""
                                R'Pi GPIO Pins
                               ┌──────────────┐
                               │     1  2     │
@@ -45,7 +45,7 @@ julia> pins = pairs\"\"\"
                               │ GND ■  ■ 21  │     :LED_STATUS => 21
                               │    39  40    │
                               └──────────────┘
-\"\"\"
+"""
 14-element Array{Pair{Symbol,B} where B,1}:
        :RTC_I2C => (2, 3)
     :CONSOLE_RX => 14
